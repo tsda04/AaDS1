@@ -70,6 +70,32 @@ public:
 		std::cout << "}";
 		std::cout << std::endl;
 	}
+	void sum(const Vector& other)
+	{
+		//if (разный размер)
+		//TODO сложение векторов (сразу в this)
+	}
+
+	void diff(const Vector& other)
+	{
+		//if (разный размер)
+		//TODO вычитание векторов (сразу в this)
+	}
+
+	void mult(const Vector& other)
+	{
+		//TODO произведение
+	}
+
+	void mult(/*число*/)
+	{
+		//TODO умножения на число
+	}
+
+	void div(/*число*/)
+	{
+		//TODO деление на число
+	}
 };
 
 
