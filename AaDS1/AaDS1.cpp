@@ -2,29 +2,25 @@
 #include <random>
 #include <clocale>
 
-
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-
-
 using T = double;
 class Vector {
-    private:
+private:
     //size_t - помещает максимально возможный размер массива на данной архитектуре (и при этом не переполняется как int)
     size_t size;
     T* coordinate;
 
-    void copy(const Vector& other) {
-        this->size = other.size;
-        this->coordinate = new T[size];
+    void copy(const Vector& other)
+    {
+        size = other.size;
+        coordinate = new T[size];
         for (size_t i = 0; i < size; ++i) {
-            this->coordinate[i] = other.coordinate[i];
+            coordinate[i] = other.coordinate[i];
         }
     }
 
-    void clear() {
-        delete[] this->coordinate;
+    void clear()
+    {
+        delete[] coordinate;
     }
 
     int random(int low, int high)
@@ -37,7 +33,8 @@ class Vector {
 
 public:
     //конструктор по умолчанию
-    Vector() {
+    Vector() 
+    {
         size = 1;
         coordinate = new T[size];
         coordinate[0] = 0;
@@ -48,8 +45,9 @@ public:
     {
         if (n == 0)
         {
-            throw  std::string{ "The size cannot be zero!" };
+            throw std::length_error("The size cannot be zero!");
         }
+
         size = n;
         coordinate = new T[size];
         for (size_t i = 0; i < size; ++i)
@@ -57,10 +55,11 @@ public:
     }
 
     //конструктор с параметрами
-    Vector(size_t n, T value) {
+    Vector(size_t n, T value) 
+    {
         if (n == 0)
         {
-            throw  std::string{ "The size cannot be zero!" };
+            throw std::length_error("The size cannot be zero!");
         }
         size = n;
         coordinate = new T[size];
@@ -69,45 +68,36 @@ public:
     }
 
     //конструктор копирования
-    Vector(const Vector& other) {
-        this->copy(other);
+    Vector(const Vector& other)
+    {
+        copy(other);
     }
 
     //оператор присваивания
-    Vector& operator=(const Vector& other) {
-        if (this != &other) {
-            this->clear();
-            this->copy(other);
+    Vector& operator=(const Vector& other) 
+    {
+        if (this != &other) 
+        {
+            clear();
+            copy(other);
         }
         return *this;
     }
 
     //деструктор
-    ~Vector() {
+    ~Vector() 
+    {
         clear();
     }
 
-    //метод печати
-    void print() const {
-        std::cout << "{ ";
-
-        for (size_t i = 0; i < size - 1; ++i)
-            std::cout << coordinate[i] << "; ";
-        std::cout << coordinate[size - 1] << " ";
-
-        std::cout << "}";
-        std::cout << std::endl;
-    }
-
+    
     //сложение
     Vector& operator+=(const Vector& other)
     {
-        //TODO !!!
         if (size != other.size)
-        {
-            throw std::string{ "The sizes are not equal!" };
-        }
-
+		{
+			throw std::invalid_argument("The sizes are not equal!");
+		}
         for (size_t i = 0; i < size; ++i)
         {
             coordinate[i] += other.coordinate[i];
@@ -123,15 +113,15 @@ public:
         res += other;
         return res;
     }
+   
 
     //вычитание векторов
     Vector& operator-=(const Vector& other)
     {
         if (size != other.size)
         {
-            throw std::string{ "The sizes are not equal!" };
+            throw std::invalid_argument("The sizes are not equal!");
         }
-
         for (size_t i = 0; i < size; ++i)
         {
             coordinate[i] = coordinate[i] - other.coordinate[i];
@@ -149,27 +139,20 @@ public:
     }
 
     //произведение
-    Vector& operator*=(const Vector& other)
+    T operator*=(const Vector& other) const
     {
         if (size != other.size)
         {
-            throw std::string{ "The sizes are not equal!" };
+            throw std::invalid_argument("The sizes are not equal!");
         }
-
+        T res = T();
         for (size_t i = 0; i < size; ++i)
         {
-            coordinate[i] = coordinate[i] * other.coordinate[i];
+            res += coordinate[i] * other.coordinate[i];
         }
-        return *this;
 
-    }
-
-    //произведение
-    Vector operator*(const Vector& other) const
-    {
-        Vector res = *this;
-        res *= other;
         return res;
+
     }
 
     //умножения на число
@@ -195,8 +178,9 @@ public:
     {
         if (n == 0)
         {
-            throw  std::string{ "The divisor cannot be zero!" };
+            throw std::logic_error("The divisor cannot be zero!");
         }
+
         for (size_t i = 0; i < size; ++i)
         {
             coordinate[i] = coordinate[i] / n;
@@ -213,86 +197,88 @@ public:
         return res;
     }
 
-    //сравнение на равенство
-    bool operator==(const Vector& other)
-    {
-
-        if (size != other.size)
-        {
-            return false;
-        }
-        else
-        {
-            for (size_t i = 0; i < size; ++i)
-            {
-                if (coordinate[i] != other.coordinate[i])
-                    return false;
-
-            }
-            return true;
-        }
-    }
-
     //сравнение на неравенство
-    bool operator!=(const Vector& other)
+    bool operator!=(const Vector& other) const
     {
-
-        if (size != other.size)
-        {
-            return true;
-        }
-        else
-
-        {
-            for (size_t i = 0; i < size; ++i)
-            {
-                if (coordinate[i] != other.coordinate[i])
-                {
-                    return true;
-
-                }
-
-            }
-            return false;
-        }
+        return !(*this == other);
     }
 
-    T get_coord(size_t i) const
+    //получение доступа
+    T operator[](size_t i) const
     {
         if (i > size - 1)
         {
-            throw std::string{ "Index out of range!" };
+            throw std::out_of_range("Index out of range!");
         }
+
         return coordinate[i];
     }
 
-    T& get_coord(size_t i)//для изменения
+    //получение доступа для изменения
+    T& operator[](size_t i)
     {
         if (i > size - 1)
         {
-            throw std::string{ "Index out of range!" };
+            throw std::out_of_range("Index out of range!");
         }
+
         return coordinate[i];
     }
+    friend bool operator==(const Vector& a, const Vector& b);
+    friend std::ostream& operator<<(std::ostream& output, const Vector& v);
 };
 
+//сравнение на равенство
+bool operator==(const Vector& a, const Vector& b)
+{
+
+    if (a.size != b.size)
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < a.size; ++i)
+    {
+        if (a.coordinate[i] != b.coordinate[i])
+            return false;
+    }
+
+    return true;
+}
 //произведение
 Vector operator*(T n, const Vector& v)
 {
     return v * n;
     //коммутативность
 }
+//вывод в поток
+std::ostream& operator<<(std::ostream& output, const Vector& v)
+{
+    output << "{ ";
 
+    for (size_t i = 0; i < v.size - 1; ++i)
+        output << v.coordinate[i] << "; ";
+    output << v.coordinate[v.size - 1] << " ";
+
+    output << "}";
+    output << std::endl;
+
+    return output;
+}
 
 int main() {
     setlocale(LC_ALL, "RUS");
     {
-       
-        Vector v1(5, 2.1);
-        v1.print();
 
-        Vector v2(v1);  //конструктор копирования (явный вызов)
-        Vector v3 = v1;  //конструктор копирования (неявный вызов)
+        Vector v1(2, 2.5);
+        Vector v2(2, 1);
+
+        std::cout << v1 << std::endl;
+        std::cout << v2 << std::endl;
+
+        std::cout << (v1 == v2) << std::endl;
+
+        Vector v3 = v1;	//конструктор копирования (неявный вызов)
 
         Vector v4(3, 5, 10);
         Vector v5(2, 5, 10);
@@ -302,22 +288,26 @@ int main() {
         Vector v9(1, 10);
         Vector v10(3, 2, 10);
 
+        Vector const v11 = v10;
+
         std::cout << "v4: ";
-        v4.print();
-        std::cout << "index 2:" << v4.get_coord(2) << std::endl;
+        std::cout << v4 << std::endl;
+        std::cout << "index 2:" << v11[2] << std::endl;
         std::cout << std::endl;
         std::cout << "v5:" << std::endl;
-        v5.print();
+        std::cout << v5 << std::endl;
         std::cout << "v6:" << std::endl;
-        v6.print();
+        std::cout << v6 << std::endl;
         std::cout << "v7:" << std::endl;
-        v7.print();
+        std::cout << v7 << std::endl;
         std::cout << "v8:" << std::endl;
-        v8.print();
+        std::cout << v8 << std::endl;
         std::cout << "v9:" << std::endl;
-        v9.print();
+        std::cout << v9 << std::endl;
         std::cout << "v10:" << std::endl;
-        v10.print();
+        std::cout << v10 << std::endl;
+
+        (std::cout << v1) << v2 << v3;
 
         if (v7 != v8)
             std::cout << "v7!=v8" << std::endl;
@@ -335,33 +325,46 @@ int main() {
 
         try
         {
+            v7 / 0;
             //v7.sum(v6);
-
-            (v7 + v6).print();
+            v7[100] = 5;
+            std::cout << (v7 + v6) << std::endl;
 
             v7 * 3;
             v7.operator*(3);
 
-            3 * v7;
+            3.0 * v7;
             operator*(3, v7);
+
+            std::cout << v7;
+            operator<<(std::cout, v7);
+
+            v7.operator+(v6);
 
             v5 -= v6;
 
-            v7 *= v6;
+         
             v6 /= 2;
             v7 *= 3;
-            v4 += v6;//выводит ошибку 
+            v4 += v6;//выводит ошибку
         }
-        catch (std::string error_message)
+        catch (const std::out_of_range& error)
         {
-            std::cout << error_message << std::endl;
+            std::cout << "OUT OF RANGE: " << "Индекс находится вне допустимых пределов!" << std::endl;
         }
-        std::cout << "same v4:" << std::endl;
-        v4.print();
-        std::cout << "v5-v6=";
-        v5.print();
-        std::cout << "v7*v6*3=";
-        v7.print();
+        catch (const std::length_error& error)
+        {
+            std::cout << "LENGTH ERROR: " << "Размер не может быть равен нулю!" << std::endl;
+        }
+        catch (const std::invalid_argument& error)
+        {
+            std::cout << "INVALID ARGUMENT: " << "Размеры не совпадают!" << std::endl;
+        }
+        catch (const std::exception& error)
+        {
+            std::cout << "EXCEPTION: " << error.what() << std::endl;
+        }
+       
     }
 
     return 0;
