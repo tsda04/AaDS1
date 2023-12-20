@@ -1,8 +1,10 @@
 ﻿#include <iostream>
 #include <random>
 #include <clocale>
+#include <stdexcept>
+#include <cmath>
 
-using T = double;
+template<typename T>
 class Vector {
 private:
     //size_t - помещает максимально возможный размер массива на данной архитектуре (и при этом не переполняется как int)
@@ -52,6 +54,19 @@ public:
         coordinate = new T[size];
         for (size_t i = 0; i < size; ++i)
             coordinate[i] = random(start, end);
+    }
+    //конструктор с параметром размера
+    Vector(size_t n)
+    {
+        if (n == 0)
+        {
+            throw std::length_error("The size cannot be zero!");
+        }
+
+        size = n;
+        coordinate = new T[size];
+        for (size_t i = 0; i < size; ++i)
+            coordinate[i] = T();
     }
 
     //конструктор с параметрами
@@ -124,7 +139,7 @@ public:
         }
         for (size_t i = 0; i < size; ++i)
         {
-            coordinate[i] = coordinate[i] - other.coordinate[i];
+            coordinate[i] -= other.coordinate[i];
         }
         return *this;
 
@@ -224,12 +239,29 @@ public:
 
         return coordinate[i];
     }
-    friend bool operator==(const Vector& a, const Vector& b);
-    friend std::ostream& operator<<(std::ostream& output, const Vector& v);
+    //сравнение на равенство
+    template<typename U>
+    friend bool operator==(const Vector<U>& a, const Vector<U>& b);
+
+    //сравнение на равенство float
+    friend bool operator==(const Vector<float>& a, const Vector<float>& b);
+    //сравнение на равенство double
+    friend bool operator==(const Vector<double>& a, const Vector<double>& b);
+    //точность:
+    static const long double EPS;
+    
+    
+    template<typename U>
+    friend std::ostream& operator<<(std::ostream& output, const Vector<U>& v);
 };
 
-//сравнение на равенство
-bool operator==(const Vector& a, const Vector& b)
+//инициализация статической константы:
+template<typename T>
+const long double Vector<T>::EPS = 1e-5;
+
+//сравнение на равенство в общем случае
+template<typename T>
+bool operator==(const Vector<T>& a, const Vector<T>& b)
 {
 
     if (a.size != b.size)
@@ -245,14 +277,55 @@ bool operator==(const Vector& a, const Vector& b)
 
     return true;
 }
+
+//"специализация" функции, т.е. перегрузка функции сравнение на равенство с float
+bool operator==(const Vector<float>& a, const Vector<float>& b)
+{
+    //std::cout << "FLOAT" << std::endl;
+    if (a.size != b.size)
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < a.size; ++i)
+    {
+        if (fabs(a.coordinate[i] - b.coordinate[i]) > Vector<float>::EPS)
+
+            return false;
+    }
+
+    return true;
+}
+
+//"специализация" функции, т.е. перегрузка функции сравнение на равенство с double
+bool operator==(const Vector<double>& a, const Vector<double>& b)
+{
+    //std::cout << "DOUBLE" << std::endl;
+    if (a.size != b.size)
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < a.size; ++i)
+    {
+        if (fabs(a.coordinate[i] - b.coordinate[i]) > Vector<double>::EPS)
+            return false;
+    }
+
+    return true;
+}
+
 //произведение
-Vector operator*(T n, const Vector& v)
+template<typename T>
+Vector<T> operator*(T n, const Vector<T>& v)
 {
     return v * n;
     //коммутативность
 }
+
 //вывод в поток
-std::ostream& operator<<(std::ostream& output, const Vector& v)
+template<typename T>
+std::ostream& operator<<(std::ostream& output, const Vector<T>& v)
 {
     output << "{ ";
 
@@ -265,34 +338,29 @@ std::ostream& operator<<(std::ostream& output, const Vector& v)
 
     return output;
 }
-
 int main() {
     setlocale(LC_ALL, "RUS");
     {
 
-        Vector v1(2, 2.5);
-        Vector v2(2, 1);
-
+        Vector<double> v1(5, 2.1);
         std::cout << v1 << std::endl;
-        std::cout << v2 << std::endl;
 
-        std::cout << (v1 == v2) << std::endl;
+        Vector<double> v2(v1);	//конструктор копирования (явный вызов)
+        Vector<double> v3 = v1;	//конструктор копирования (неявный вызов)
 
-        Vector v3 = v1;	//конструктор копирования (неявный вызов)
+        Vector<int> v4(3, 5, 10);
+        Vector<short> v5(2, 5, 10);
+        Vector<double> v6(2, 1, 5);
+        Vector<double> v7(2, 10);
+        Vector<double> v8(2, 10);
+        Vector<double> v9(1, 10);
+        Vector<double> v10(3, 2, 10);
 
-        Vector v4(3, 5, 10);
-        Vector v5(2, 5, 10);
-        Vector v6(2, 1, 5);
-        Vector v7(2, 10);
-        Vector v8(2, 10);
-        Vector v9(1, 10);
-        Vector v10(3, 2, 10);
-
-        Vector const v11 = v10;
+        Vector<double> const v11 = v10;
 
         std::cout << "v4: ";
         std::cout << v4 << std::endl;
-        std::cout << "index 2:" << v11[2] << std::endl;
+        std::cout << "index 2:" << v4[2] << std::endl;
         std::cout << std::endl;
         std::cout << "v5:" << std::endl;
         std::cout << v5 << std::endl;
@@ -334,19 +402,14 @@ int main() {
             v7.operator*(3);
 
             3.0 * v7;
-            operator*(3, v7);
+ 
 
             std::cout << v7;
             operator<<(std::cout, v7);
 
             v7.operator+(v6);
-
-            v5 -= v6;
-
-         
             v6 /= 2;
             v7 *= 3;
-            v4 += v6;//выводит ошибку
         }
         catch (const std::out_of_range& error)
         {
