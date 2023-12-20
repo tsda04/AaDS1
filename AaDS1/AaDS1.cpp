@@ -3,6 +3,7 @@
 #include <clocale>
 #include <stdexcept>
 #include <cmath>
+#include <complex>
 
 template<typename T>
 class Vector {
@@ -154,7 +155,7 @@ public:
     }
 
     //произведение
-    T operator*=(const Vector& other) const
+    T operator*(const Vector& other) const
     {
         if (size != other.size)
         {
@@ -341,7 +342,25 @@ std::ostream& operator<<(std::ostream& output, const Vector<T>& v)
 int main() {
     setlocale(LC_ALL, "RUS");
     {
+        Vector<std::complex<double>> v1(2, std::complex<float>(2, 3));
+        Vector<std::complex<double>> v2(2, 0);
 
+        v2[0] = std::complex<double>(1, -3);
+        v2[1] = std::complex<double>(-5, 4);
+
+        std::cout << v1 << std::endl;
+        std::cout << v2 << std::endl;
+        std::cout << v1 * v2 << std::endl;
+        
+        /*
+        Vector<int> v1(2, 2.5);
+        Vector<int> v2(2, 1);
+
+       std::cout << v1 << std::endl;
+        std::cout << v2 << std::endl;
+        std::cout << (v1 * v2) << std::endl;
+       
+        std::cout << (v1 == v2) << std::endl;
         Vector<double> v1(5, 2.1);
         std::cout << v1 << std::endl;
 
@@ -426,7 +445,7 @@ int main() {
         catch (const std::exception& error)
         {
             std::cout << "EXCEPTION: " << error.what() << std::endl;
-        }
+        }*/
        
     }
 
